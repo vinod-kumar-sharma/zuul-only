@@ -28,7 +28,7 @@ public class ApiGatewayApplication {
     public static void main(String[] args) {
         SpringApplication.run(ApiGatewayApplication.class, args);
     }
-    @Bean
+    /*@Bean
     UserInfoRestTemplateCustomizer userInfoRestTemplateCustomizer(SpringClientFactory springClientFactory) {
         return template -> {
             AccessTokenProviderChain accessTokenProviderChain = Stream
@@ -38,5 +38,5 @@ public class ApiGatewayApplication {
                     .collect(Collectors.collectingAndThen(Collectors.toList(), AccessTokenProviderChain::new));
             template.setAccessTokenProvider(accessTokenProviderChain);
         };
-    }
+    }*/
 }
