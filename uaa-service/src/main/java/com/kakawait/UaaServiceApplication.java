@@ -2,18 +2,14 @@ package com.kakawait;
 
 import java.security.KeyPair;
 
-import javax.servlet.Filter;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.actuate.autoconfigure.ManagementServerProperties;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.context.embedded.FilterRegistrationBean;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -61,8 +57,16 @@ public class UaaServiceApplication extends WebMvcConfigurerAdapter {
 
         @Override
         protected void configure(HttpSecurity http) throws Exception {
-            http.formLogin().loginPage("/login").permitAll().and().authorizeRequests()
-                .anyRequest().authenticated();
+            http
+            .formLogin()
+            .loginPage("/login").defaultSuccessUrl("/dummy", true)
+            .permitAll()
+            
+            .and()
+            .authorizeRequests()
+            .anyRequest().authenticated().and().exceptionHandling()
+            .accessDeniedPage("/dummy/");
+            super.configure(http);
         }
 
         @Override
@@ -86,8 +90,7 @@ public class UaaServiceApplication extends WebMvcConfigurerAdapter {
         @Bean
         public JwtAccessTokenConverter jwtAccessTokenConverter() {
             JwtAccessTokenConverter converter = new JwtAccessTokenConverter();
-            KeyPair keyPair = new KeyStoreKeyFactory(new ClassPathResource("keystore.jks"), "foobar".toCharArray())
-                    .getKeyPair("test");
+            KeyPair keyPair = new KeyStoreKeyFactory(new ClassPathResource("keystore.jks"), "foobar".toCharArray()).getKeyPair("test");
             converter.setKeyPair(keyPair);
             return converter;
         }

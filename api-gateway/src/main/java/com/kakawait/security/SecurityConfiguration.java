@@ -40,6 +40,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @Configuration
 @EnableOAuth2Sso
 @EnableResourceServer
+@EnableWebSecurity
 @Order(value = 0)
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     private static final String CSRF_COOKIE_NAME = "XSRF-TOKEN";
@@ -56,14 +57,17 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Override
     public void configure(HttpSecurity http) throws Exception {
-        http.authorizeRequests().antMatchers("/uaa/**", "/login").permitAll().anyRequest().authenticated()
+        http/*.logout().logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
+        .invalidateHttpSession(true)
+        .clearAuthentication(true)
+        .logoutSuccessUrl("/dummy/")
+        .and()*/
+        .authorizeRequests().antMatchers("/uaa/**", "/login").permitAll().anyRequest().authenticated()
             .and()
             .csrf().requireCsrfProtectionMatcher(csrfRequestMatcher()).csrfTokenRepository(csrfTokenRepository())
             .and()
             .addFilterAfter(csrfHeaderFilter(), CsrfFilter.class)
-            .addFilterAfter(oAuth2AuthenticationProcessingFilter(), AbstractPreAuthenticatedProcessingFilter.class)
-            .logout().permitAll()
-            .logoutSuccessUrl("/");
+            .addFilterAfter(oAuth2AuthenticationProcessingFilter(), AbstractPreAuthenticatedProcessingFilter.class);
     }
 
     private OAuth2AuthenticationProcessingFilter oAuth2AuthenticationProcessingFilter() {
@@ -88,7 +92,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     private RequestMatcher csrfRequestMatcher() {
         return new RequestMatcher() {
             // Always allow the HTTP GET method
-            private final Pattern allowedMethods = Pattern.compile("^(GET|HEAD|OPTIONS|TRACE)$");
+            private final Pattern allowedMethods = Pattern.compile("^(GET|HEAD|OPTIONS|TRACE|POST)$");
 
             // Disable CSFR protection on the following urls:
             private final AntPathRequestMatcher[] requestMatchers = { new AntPathRequestMatcher("/uaa/**") };
